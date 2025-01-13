@@ -8,12 +8,9 @@ import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.drive.MecanumDrive;
 
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -21,33 +18,21 @@ import com.ctre.phoenix6.signals.InvertedValue;
  * this project, you must also update the manifest file in the resource directory.
  */
 public class Robot extends TimedRobot {
-  private final TalonFX m_leftDrive = new TalonFX(0);
-   private final TalonFX m_rightDrive = new TalonFX(1);
-   private final DifferentialDrive m_robotDrive =
-     new DifferentialDrive(m_leftDrive::set, m_rightDrive::set);
-   private final XboxController m_controller = new XboxController(0);
-   private final Timer m_timer = new Timer();
+  private final TalonFX m_leftBackDrive = new TalonFX(1, "rio");
+  private final TalonFX m_leftFrontDrive = new TalonFX(2, "rio");
+  private final TalonFX m_rightFrontDrive = new TalonFX(3, "rio");
+  private final TalonFX m_rightBackDrive = new TalonFX(0, "rio");
+  private final MecanumDrive m_robotDrive = new MecanumDrive(
+    m_leftFrontDrive::set, m_leftBackDrive::set, m_rightFrontDrive::set, m_rightBackDrive::set);
+  private final XboxController m_controller = new XboxController(0);
+  private final Timer m_timer = new Timer();
 
   /** Called once at the beginning of the robot program. */
   public Robot() {
-    SendableRegistry.addChild(m_robotDrive, m_leftDrive);
-    SendableRegistry.addChild(m_robotDrive, m_rightDrive);
-
-    // We need to invert one side of the drivetrain so that positive voltages
-    // result in both sides moving forward. Depending on how your robot's
-    // gearbox is constructed, you might have to invert the left side instead.
-    
-    // m_rightDrive.setInverted(true);
-    // BEN - This line uses the "setInverted()" method, which is said to be "deprecated" for TalonFX Motors.
-    // I think that means it will still work for now but the method will disappear without a trace next year.
-    // In the interest of the thoroughness and shelf life of our code, I have done this. 
-    TalonFXConfiguration reverseTalonConfig = new TalonFXConfiguration();
-    MotorOutputConfigs reverseMotorConfig = new MotorOutputConfigs();
-    reverseMotorConfig.withInverted(InvertedValue.Clockwise_Positive);
-    reverseTalonConfig.withMotorOutput(reverseMotorConfig);
-    m_rightDrive.getConfigurator().apply(reverseTalonConfig, 0.050);
-    // It seems completely ridiculous, but as far as I can tell this is how you're supposed to reverse the
-    // directions of your motors now. Hopefully it works. - BEN
+    SendableRegistry.addChild(m_robotDrive, m_leftBackDrive);
+    SendableRegistry.addChild(m_robotDrive, m_leftFrontDrive);
+    SendableRegistry.addChild(m_robotDrive, m_rightFrontDrive);
+    SendableRegistry.addChild(m_robotDrive, m_rightBackDrive);
   }
 
   /** This function is run once each time the robot enters autonomous mode. */
@@ -62,7 +47,7 @@ public class Robot extends TimedRobot {
     // Drive for 2 seconds
     if (m_timer.get() < 2.0) {
       // Drive forwards half speed, make sure to turn input squaring off
-      m_robotDrive.arcadeDrive(0.5, 0.0, false);
+      m_robotDrive.driveCartesian(0.5, 0.0, 0.0);
     } else {
       m_robotDrive.stopMotor(); // stop robot
     }
@@ -75,7 +60,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during teleoperated mode. */
   @Override
   public void teleopPeriodic() {
-    m_robotDrive.arcadeDrive(-m_controller.getLeftY(), -m_controller.getRightX());
+    m_robotDrive.driveCartesian(-m_controller.getLeftY(), m_controller.getLeftX(), m_controller.getRightX());
   }
 
   /** This function is called once each time the robot enters test mode. */
