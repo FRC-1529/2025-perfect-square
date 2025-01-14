@@ -4,13 +4,11 @@
 
 package frc.robot;
 
-import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.drive.MecanumDrive;
-
-import com.ctre.phoenix6.hardware.TalonFX;
+import frc.robot.subsystems.Drivetrain;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -18,21 +16,29 @@ import com.ctre.phoenix6.hardware.TalonFX;
  * this project, you must also update the manifest file in the resource directory.
  */
 public class Robot extends TimedRobot {
-  private final TalonFX m_leftBackDrive = new TalonFX(1, "rio");
-  private final TalonFX m_leftFrontDrive = new TalonFX(2, "rio");
-  private final TalonFX m_rightFrontDrive = new TalonFX(3, "rio");
-  private final TalonFX m_rightBackDrive = new TalonFX(0, "rio");
-  private final MecanumDrive m_robotDrive = new MecanumDrive(
-    m_leftFrontDrive::set, m_leftBackDrive::set, m_rightFrontDrive::set, m_rightBackDrive::set);
-  private final XboxController m_controller = new XboxController(0);
-  private final Timer m_timer = new Timer();
+  private Drivetrain m_drive;
+  private final XboxController m_controller;
+  private final Timer m_timer;
+
+  private double m_linearPowerScalar = Constants.defaultLinearPowerScalar;
+  private double m_angularPowerScalar = Constants.defaultAngularPowerScalar;
 
   /** Called once at the beginning of the robot program. */
   public Robot() {
-    SendableRegistry.addChild(m_robotDrive, m_leftBackDrive);
-    SendableRegistry.addChild(m_robotDrive, m_leftFrontDrive);
-    SendableRegistry.addChild(m_robotDrive, m_rightFrontDrive);
-    SendableRegistry.addChild(m_robotDrive, m_rightBackDrive);
+    enableLiveWindowInTest(true);
+
+    m_drive = new Drivetrain();
+
+    Preferences.initDouble(Constants.linearPowerScalarKey, m_linearPowerScalar);
+    Preferences.initDouble(Constants.angularPowerScalarKey, m_angularPowerScalar);
+
+    m_controller = new XboxController(0);
+    m_timer = new Timer();
+  }
+
+  @Override
+  public void robotPeriodic() {
+    loadPreferences();
   }
 
   /** This function is run once each time the robot enters autonomous mode. */
@@ -47,9 +53,9 @@ public class Robot extends TimedRobot {
     // Drive for 2 seconds
     if (m_timer.get() < 2.0) {
       // Drive forwards half speed, make sure to turn input squaring off
-      m_robotDrive.driveCartesian(0.5, 0.0, 0.0);
+      m_drive.drive(0.5, 0.0, 0.0);
     } else {
-      m_robotDrive.stopMotor(); // stop robot
+      m_drive.stopMotor(); // stop robot
     }
   }
 
@@ -60,7 +66,9 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during teleoperated mode. */
   @Override
   public void teleopPeriodic() {
-    m_robotDrive.driveCartesian(-m_controller.getLeftY(), m_controller.getLeftX(), m_controller.getRightX());
+    m_drive.drive(-m_controller.getLeftY() * m_linearPowerScalar, 
+    m_controller.getLeftX() * m_linearPowerScalar, 
+    m_controller.getRightX() * m_angularPowerScalar);
   }
 
   /** This function is called once each time the robot enters test mode. */
@@ -70,4 +78,9 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {}
+
+  public void loadPreferences() {
+    m_linearPowerScalar = Preferences.getDouble(Constants.linearPowerScalarKey, m_linearPowerScalar);
+    m_angularPowerScalar = Preferences.getDouble(Constants.angularPowerScalarKey, m_angularPowerScalar);
+  }
 }
