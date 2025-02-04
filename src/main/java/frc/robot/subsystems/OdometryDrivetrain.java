@@ -5,14 +5,14 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Drivetrain extends SubsystemBase {
+public class OdometryDrivetrain extends SubsystemBase {
     private final TalonFX m_leftBackDrive;
     private final TalonFX m_leftFrontDrive;
     private final TalonFX m_rightFrontDrive;
     private final TalonFX m_rightBackDrive;
     private final MecanumDrive m_robotDrive;
 
-    public Drivetrain() {
+    public OdometryDrivetrain() {
         m_leftBackDrive = new TalonFX(1, "rio");
         addChild("Left Back", m_leftBackDrive);
         m_leftFrontDrive = new TalonFX(2, "rio");
