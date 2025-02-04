@@ -3,17 +3,14 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
-
-import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
+import frc.robot.subsystems.CoralIntake;
+import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Lift;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -21,61 +18,67 @@ import com.ctre.phoenix6.signals.InvertedValue;
  * this project, you must also update the manifest file in the resource directory.
  */
 public class Robot extends TimedRobot {
-  private final TalonFX m_leftDrive = new TalonFX(0);
-   private final TalonFX m_rightDrive = new TalonFX(1);
-   private final DifferentialDrive m_robotDrive =
-     new DifferentialDrive(m_leftDrive::set, m_rightDrive::set);
-   private final XboxController m_controller = new XboxController(0);
-   private final Timer m_timer = new Timer();
+  private final Drivetrain m_drive;
+  private final Lift m_lift;
+  private final CoralIntake m_coralIntake;
+  private final XboxController m_controller;
+  private final Timer m_timer;
+
+  private double m_linearPowerScalar = Constants.defaultLinearPowerScalar;
+  private double m_angularPowerScalar = Constants.defaultAngularPowerScalar;
+  private double m_liftPowerScalar = Constants.defaultLiftPowerScalar;
 
   /** Called once at the beginning of the robot program. */
   public Robot() {
-    SendableRegistry.addChild(m_robotDrive, m_leftDrive);
-    SendableRegistry.addChild(m_robotDrive, m_rightDrive);
+    enableLiveWindowInTest(true);
 
-    // We need to invert one side of the drivetrain so that positive voltages
-    // result in both sides moving forward. Depending on how your robot's
-    // gearbox is constructed, you might have to invert the left side instead.
-    
-    // m_rightDrive.setInverted(true);
-    // BEN - This line uses the "setInverted()" method, which is said to be "deprecated" for TalonFX Motors.
-    // I think that means it will still work for now but the method will disappear without a trace next year.
-    // In the interest of the thoroughness and shelf life of our code, I have done this. 
-    TalonFXConfiguration reverseTalonConfig = new TalonFXConfiguration();
-    MotorOutputConfigs reverseMotorConfig = new MotorOutputConfigs();
-    reverseMotorConfig.withInverted(InvertedValue.Clockwise_Positive);
-    reverseTalonConfig.withMotorOutput(reverseMotorConfig);
-    m_rightDrive.getConfigurator().apply(reverseTalonConfig, 0.050);
-    // It seems completely ridiculous, but as far as I can tell this is how you're supposed to reverse the
-    // directions of your motors now. Hopefully it works. - BEN
+    Preferences.initDouble(Constants.linearPowerScalarKey, m_linearPowerScalar);
+    Preferences.initDouble(Constants.angularPowerScalarKey, m_angularPowerScalar);
+
+    m_drive = new Drivetrain();
+    m_lift = new Lift();
+    m_coralIntake = new CoralIntake();
+
+    m_controller = new XboxController(0);
+    m_timer = new Timer();
+  }
+
+  @Override
+  public void robotPeriodic() {
+    loadPreferences();
   }
 
   /** This function is run once each time the robot enters autonomous mode. */
   @Override
-  public void autonomousInit() {
-    m_timer.restart();
-  }
+  public void autonomousInit() {}
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {
-    // Drive for 2 seconds
-    if (m_timer.get() < 2.0) {
-      // Drive forwards half speed, make sure to turn input squaring off
-      m_robotDrive.arcadeDrive(0.5, 0.0, false);
-    } else {
-      m_robotDrive.stopMotor(); // stop robot
-    }
-  }
+  public void autonomousPeriodic() {}
 
   /** This function is called once each time the robot enters teleoperated mode. */
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    m_timer.restart();
+    m_lift.support();
+  }
 
   /** This function is called periodically during teleoperated mode. */
   @Override
   public void teleopPeriodic() {
-    m_robotDrive.arcadeDrive(-m_controller.getLeftY(), -m_controller.getRightX());
+    m_drive.drive(-m_controller.getLeftY() * m_linearPowerScalar, 
+    m_controller.getLeftX() * m_linearPowerScalar, 
+    m_controller.getRightX() * m_angularPowerScalar);
+    m_lift.update((m_controller.getRightTriggerAxis() - m_controller.getLeftTriggerAxis()) * m_liftPowerScalar);
+    m_coralIntake.update();
+
+    if (m_controller.getRightBumperButton()) {
+      m_coralIntake.startIntake();
+    } else if (m_controller.getLeftBumperButton()) {
+      m_coralIntake.startOuttake();
+    } else {
+      m_coralIntake.stopIntake();
+    }
   }
 
   /** This function is called once each time the robot enters test mode. */
@@ -85,4 +88,10 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {}
+
+  public void loadPreferences() {
+    m_linearPowerScalar = Preferences.getDouble(Constants.linearPowerScalarKey, m_linearPowerScalar);
+    m_angularPowerScalar = Preferences.getDouble(Constants.angularPowerScalarKey, m_angularPowerScalar);
+    m_liftPowerScalar = Preferences.getDouble(Constants.liftPowerScalarKey, m_liftPowerScalar);
+  }
 }
