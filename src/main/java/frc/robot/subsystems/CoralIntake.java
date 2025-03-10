@@ -3,35 +3,34 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
-public class CoralIntake {
-    private final VictorSPX m_leftMotor;
-    private final VictorSPX m_rightMotor;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-    private double intakePower = 0.0;
+public class CoralIntake extends SubsystemBase {
+    private final VictorSPX m_leftMotor = new VictorSPX(5);
+    private final VictorSPX m_rightMotor = new VictorSPX(6);
+
+    public void setPower(double power) {
+        m_leftMotor.set(VictorSPXControlMode.PercentOutput, power);
+        m_rightMotor.set(VictorSPXControlMode.PercentOutput, power);
+    }
 
     public CoralIntake() {
-        m_leftMotor = new VictorSPX(5);
-        m_rightMotor = new VictorSPX(6);
+        m_leftMotor.setInverted(true);
     }
 
-    public void update() {
-        m_leftMotor.set(VictorSPXControlMode.PercentOutput, intakePower);
-        m_rightMotor.set(VictorSPXControlMode.PercentOutput, intakePower);
+    public Command startIntake() {
+        return this.run(() -> setPower(1.0));
+    }
+    public Command stopIntake() {
+        return this.run(() -> setPower(0.0));
+    }
+    
+    public Command startOuttake() {
+        return this.run(() -> setPower(-1.0));
     }
 
-    public void set(double power) {
-        intakePower = power;
-    }
-
-    public void startIntake() {
-        intakePower = 1.0;
-    }
-
-    public void startOuttake() {
-        intakePower = -1.0;
-    }
-
-    public void stopIntake() {
-        intakePower = 0.0;
+    public Command set(double power) {
+        return this.run(() -> setPower(power));
     }
 }

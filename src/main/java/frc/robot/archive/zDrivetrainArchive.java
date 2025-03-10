@@ -1,18 +1,18 @@
-package frc.robot.subsystems;
+package frc.robot.archive;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class OdometryDrivetrain extends SubsystemBase {
+public class zDrivetrainArchive extends SubsystemBase {
     private final TalonFX m_leftBackDrive;
     private final TalonFX m_leftFrontDrive;
     private final TalonFX m_rightFrontDrive;
     private final TalonFX m_rightBackDrive;
     private final MecanumDrive m_robotDrive;
 
-    public OdometryDrivetrain() {
+    public zDrivetrainArchive() {
         m_leftBackDrive = new TalonFX(1, "rio");
         addChild("Left Back", m_leftBackDrive);
         m_leftFrontDrive = new TalonFX(2, "rio");
@@ -26,7 +26,7 @@ public class OdometryDrivetrain extends SubsystemBase {
         addChild("Drive", m_robotDrive);
     }
 
-    public void drive(double xSpeed, double ySpeed, double zRotation) {
+    public void update(double xSpeed, double ySpeed, double zRotation) {
         m_robotDrive.driveCartesian(xSpeed, ySpeed, zRotation);
     }
 
