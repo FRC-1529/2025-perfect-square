@@ -1,0 +1,115 @@
+[
+  {
+    "name": "/Preferences/LinearPowerScalar",
+    "type": "double",
+    "value": 1.0,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/AngularPowerScalar",
+    "type": "double",
+    "value": 1.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/LiftPowerScalar",
+    "type": "double",
+    "value": 0.25,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/SnappingDistance",
+    "type": "double",
+    "value": 1.0,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/DoSnap",
+    "type": "boolean",
+    "value": true,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/X",
+    "type": "double",
+    "value": 4.0,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/Y",
+    "type": "double",
+    "value": 1.7,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/H",
+    "type": "double",
+    "value": 120.0,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/LinearGain",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/AngularGain",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/LinearTolerance",
+    "type": "double",
+    "value": 0.2,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/AngularTolerance",
+    "type": "double",
+    "value": 10.0,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/LiftHeightTolerance",
+    "type": "double",
+    "value": 1000.0,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  }
+]
